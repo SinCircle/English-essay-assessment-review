@@ -1,4 +1,4 @@
-# EEAR - English essay assessment review , 适合高中班级体制的英语作文批改器
+# EEAR - English essay assessment review , 适合高中班级体质的英语作文批改器
 
 ## 简介
 
