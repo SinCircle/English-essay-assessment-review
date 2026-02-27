@@ -1,5 +1,5 @@
-streamlit>=1.40,<2
-rapidocr-onnxruntime>=1.3.24
-openai>=1.50.0
-numpy>=1.24
-Pillow>=10.0.0
+streamlit
+openai
+rapidocr_onnxruntime
+numpy
+Pillow
