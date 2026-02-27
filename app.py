@@ -501,6 +501,7 @@ with right_col:
             key="essay_image_file"
         )
         if uploaded_file is not None:
+            uploaded_file.seek(0)
             image = Image.open(uploaded_file)
 
         st.text_area(
@@ -532,7 +533,8 @@ if uploaded_file is not None:
                 uploaded_mime = uploaded_file.type if uploaded_file.type else "image/png"
                 st.session_state.source_image_data_url = f"data:{uploaded_mime};base64,{base64.b64encode(uploaded_bytes).decode('utf-8')}"
 
-                image = Image.open(uploaded_file)
+                uploaded_file.seek(0)
+                image = Image.open(uploaded_file).convert("RGB")
                 img_array = np.array(image)
                 result, _ = reader(img_array)
                 st.session_state.last_ocr_image_signature = current_signature
