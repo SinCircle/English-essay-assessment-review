@@ -57,12 +57,21 @@ def load_config_defaults():
 
 default_base_url, default_api_key, default_model_name = load_config_defaults()
 
-# Initialize RapidOCR reader
+# Initialize RapidOCR reader (lazy-loaded to avoid crash on Streamlit Cloud)
 @st.cache_resource
 def load_ocr_reader():
     return RapidOCR()
 
-reader = load_ocr_reader()
+def _downscale_image(img_array, max_long_side=2048):
+    """Downscale image if any side exceeds max_long_side to prevent OOM."""
+    h, w = img_array.shape[:2]
+    if max(h, w) <= max_long_side:
+        return img_array
+    scale = max_long_side / max(h, w)
+    new_w, new_h = int(w * scale), int(h * scale)
+    img = Image.fromarray(img_array)
+    img = img.resize((new_w, new_h), Image.LANCZOS)
+    return np.array(img)
 
 def tokenize_text(text):
     # Normalize internal spaces in brackets
@@ -537,7 +546,9 @@ if uploaded_file is not None:
                 uploaded_file.seek(0)
                 image = Image.open(uploaded_file).convert("RGB")
                 img_array = np.array(image)
-                result, _ = reader(img_array)
+                img_array = _downscale_image(img_array)
+                ocr_reader = load_ocr_reader()
+                result, _ = ocr_reader(img_array)
                 st.session_state.last_ocr_image_signature = current_signature
 
                 if not result:
