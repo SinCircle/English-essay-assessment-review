@@ -453,7 +453,7 @@ with left_col:
             placeholder="请输入 API Key"
         )
 
-        if st.button("拉取模型列表", use_container_width=True):
+        def _fetch_models_callback():
             if (st.session_state.api_key or "").strip():
                 models, error = fetch_models_from_endpoint(st.session_state.api_base_url, st.session_state.api_key)
                 if error:
@@ -465,7 +465,8 @@ with left_col:
             else:
                 st.session_state.models_fetch_error = "请先填写 API Key。"
                 st.session_state.models_from_api = []
-            st.rerun()
+
+        st.button("拉取模型列表", use_container_width=True, on_click=_fetch_models_callback)
 
         st.selectbox(
             "Model",
