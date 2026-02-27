@@ -1,5 +1,4 @@
 import streamlit as st
-from rapidocr_onnxruntime import RapidOCR
 import openai
 import os
 import re
@@ -60,9 +59,13 @@ default_base_url, default_api_key, default_model_name = load_config_defaults()
 # Initialize RapidOCR reader
 @st.cache_resource
 def load_ocr_reader():
-    return RapidOCR()
+    try:
+        from rapidocr_onnxruntime import RapidOCR
+        return RapidOCR(), None
+    except Exception as exc:
+        return None, str(exc)
 
-reader = load_ocr_reader()
+reader, ocr_init_error = load_ocr_reader()
 
 def tokenize_text(text):
     # Normalize internal spaces in brackets
@@ -528,6 +531,13 @@ if uploaded_file is not None:
     if st.session_state.last_ocr_image_signature != current_signature:
         with st.spinner("正在识别图片中的文字"):
             try:
+                if reader is None:
+                    st.session_state.last_ocr_image_signature = current_signature
+                    st.error("OCR 组件加载失败，暂时无法识别图片。请检查部署依赖后重试。")
+                    if ocr_init_error:
+                        st.caption(f"OCR 初始化错误: {ocr_init_error}")
+                    st.stop()
+
                 uploaded_bytes = uploaded_file.getvalue()
                 uploaded_mime = uploaded_file.type if uploaded_file.type else "image/png"
                 st.session_state.source_image_data_url = f"data:{uploaded_mime};base64,{base64.b64encode(uploaded_bytes).decode('utf-8')}"
